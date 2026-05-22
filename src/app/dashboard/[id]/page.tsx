@@ -30,9 +30,7 @@ export default async function Page({
   const { id } =
     await params;
 
-  const response =
-    await getTimesheet(id);
-
+  const response = await getTimesheet(id);
   return (
     <>
       <Header />
