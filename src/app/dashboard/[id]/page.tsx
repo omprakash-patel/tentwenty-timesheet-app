@@ -4,12 +4,12 @@ import Header from "@/components/front/Header"
 async function getTimesheet(
   id: string
 ) {
-  const res = await fetch(
-    `https://tentwenty-timesheet-app-vllj.vercel.app/api/timesheets/${id}`,
-    {
-      cache: "no-store",
-    }
-  );
+ const res = await fetch(
+  `${process.env.NEXTAUTH_URL}/api/timesheets/${id}`,
+  {
+    cache: "no-store",
+  }
+);
 
   if (!res.ok) {
     throw new Error(
