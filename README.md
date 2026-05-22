@@ -6,10 +6,10 @@ A modern SaaS-style Timesheet Management application built using Next.js, TypeSc
 
 # Live Demo
 
-Add your deployed URL here:
+Add your deployed URL here: https://tentwenty-timesheet-app.vercel.app
 
 ```bash
-https://tentwenty-timesheet-app-vllj.vercel.app/login
+https://tentwenty-timesheet-app.vercel.app
 ```
 
 ---
@@ -119,7 +119,7 @@ app/
 │
 components/
 │
-├── layout/
+├── front/
 ├── modals/
 ├── table/
 │
@@ -130,7 +130,14 @@ data/
 lib/
 │
 ├── auth.ts
-│
+├── validations.ts
+|
+|
+Services
+|
+├── timesheet.service.ts
+|
+|
 types/
 │
 ├── timesheet.ts
@@ -248,7 +255,7 @@ Password: admin123
 Approximate development time:
 
 ```bash
-6-10 hours
+10-12 hours
 ```
 
 ---
