@@ -9,7 +9,7 @@ A modern SaaS-style Timesheet Management application built using Next.js, TypeSc
 Add your deployed URL here:
 
 ```bash
-https://your-demo-url.vercel.app
+https://tentwenty-timesheet-app-vllj.vercel.app/login
 ```
 
 ---
@@ -19,7 +19,7 @@ https://your-demo-url.vercel.app
 Add your repository URL here:
 
 ```bash
-https://github.com/yourusername/tentwenty-timesheet-app
+https://github.com/omprakash-patel/tentwenty-timesheet-app
 ```
 
 ---
