@@ -1,44 +1,101 @@
 "use client";
+
 import { getTimesheets } from "@/services/timesheet.service";
 import { Timesheet } from "@/types/timesheet";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function TimesheetTable() {
-  const [open, setOpen] = useState(false);
   const [timesheets, setTimesheets] =
-  useState<Timesheet[]>([]);
+    useState<Timesheet[]>([]);
 
-const [loading, setLoading] =
-  useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-const [error, setError] =
-  useState("");
-useEffect(() => {
-  const fetchTimesheets =
-    async () => {
-      try {
-        setLoading(true);
+  const [error, setError] =
+    useState("");
 
-        const response =
-          await getTimesheets();
+  // FILTER STATES
+  const [statusFilter, setStatusFilter] =
+    useState("");
 
-        setTimesheets(
-          response.data
-        );
-      } catch (error) {
-        setError(
-          "Failed to load timesheets"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [dateFilter, setDateFilter] =
+    useState("");
 
-  fetchTimesheets();
-}, []);
-  const getStatusStyle = (status: string) => {
-    switch (status.toLowerCase()) {
+  // FETCH DATA
+  useEffect(() => {
+    const fetchTimesheets =
+      async () => {
+        try {
+          setLoading(true);
+
+          const response =
+            await getTimesheets();
+
+          setTimesheets(
+            response.data
+          );
+        } catch (err) {
+          setError(
+            "Failed to load timesheets"
+          );
+        } finally {
+          setLoading(false);
+        }
+      };
+
+    fetchTimesheets();
+  }, []);
+
+  // FILTERED DATA
+  const filteredTimesheets =
+    useMemo(() => {
+      return timesheets.filter(
+        (item) => {
+          const statusMatch =
+            statusFilter === ""
+              ? true
+              : item.status ===
+                statusFilter;
+
+          const dateMatch =
+            dateFilter === ""
+              ? true
+              : item.dateRange ===
+                dateFilter;
+
+          return (
+            statusMatch &&
+            dateMatch
+          );
+        }
+      );
+    }, [
+      timesheets,
+      statusFilter,
+      dateFilter,
+    ]);
+
+  // UNIQUE DATES
+  const uniqueDates =
+    useMemo(() => {
+      return [
+        ...new Set(
+          timesheets.map(
+            (item) =>
+              item.dateRange
+          )
+        ),
+      ];
+    }, [timesheets]);
+
+  // STATUS STYLE
+  const getStatusStyle = (
+    status: string
+  ) => {
+    switch (
+      status.toLowerCase()
+    ) {
       case "completed":
         return "bg-green-100 text-green-700";
 
@@ -52,59 +109,126 @@ useEffect(() => {
         return "bg-gray-100 text-gray-700";
     }
   };
-if (loading) {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-    </div>
-  );
-}
-if (error) {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-red-500">
-        {error}
-      </p>
-    </div>
-  );
-}
+
+  // LOADER
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f5]">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  // ERROR
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f5]">
+        <div className="rounded-xl bg-white px-8 py-6 shadow">
+          <p className="text-sm text-red-500">
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-
       {/* CONTENT */}
       <div className="mx-auto max-w-6xl p-6">
-        {/* CARD */}
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-[#ececec] bg-white p-6 shadow-sm">
           {/* HEADER */}
           <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <h2 className="text-2xl font-bold text-black">
-              Your Timesheets
-            </h2>
+            <div>
+              <h2 className="text-2xl font-bold text-[#1d1d1f]">
+                Your Timesheets
+              </h2>
 
-            <button
-              onClick={() => setOpen(true)}
-              className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
-            >
-              Add Timesheet
-            </button>
+              <p className="mt-1 text-sm text-gray-500">
+                Manage and track
+                weekly work logs
+              </p>
+            </div>
+
           </div>
 
           {/* FILTERS */}
           <div className="mb-6 flex flex-col gap-3 md:flex-row">
-            <select className="h-10 rounded-lg border border-gray-300 px-3 text-sm outline-none">
-              <option>Date Range</option>
+            {/* DATE FILTER */}
+            <select
+              value={dateFilter}
+              onChange={(e) =>
+                setDateFilter(
+                  e.target.value
+                )
+              }
+              className="h-11 rounded-xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-blue-500"
+            >
+              <option value="">
+                All Dates
+              </option>
+
+              {uniqueDates.map(
+                (date) => (
+                  <option
+                    key={date}
+                    value={date}
+                  >
+                    {date}
+                  </option>
+                )
+              )}
             </select>
 
-            <select className="h-10 rounded-lg border border-gray-300 px-3 text-sm outline-none">
-              <option>Status</option>
+            {/* STATUS FILTER */}
+            <select
+              value={
+                statusFilter
+              }
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value
+                )
+              }
+              className="h-11 rounded-xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-blue-500"
+            >
+              <option value="">
+                All Status
+              </option>
+
+              <option value="Completed">
+                Completed
+              </option>
+
+              <option value="Incomplete">
+                Incomplete
+              </option>
+
+              <option value="Missing">
+                Missing
+              </option>
             </select>
+
+            {/* RESET */}
+            <button
+              onClick={() => {
+                setDateFilter("");
+                setStatusFilter(
+                  ""
+                );
+              }}
+              className="h-11 rounded-xl border border-gray-300 px-4 text-sm font-medium transition hover:bg-gray-100"
+            >
+              Reset Filters
+            </button>
           </div>
 
           {/* TABLE */}
-          <div className="overflow-x-auto rounded-xl border">
+          <div className="overflow-x-auto rounded-2xl border border-[#ececec]">
             <table className="w-full min-w-[700px]">
+              {/* HEAD */}
               <thead className="bg-[#fafafa]">
-                <tr className="border-b">
+                <tr className="border-b border-[#ececec]">
                   <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Week #
                   </th>
@@ -123,88 +247,110 @@ if (error) {
                 </tr>
               </thead>
 
-             <tbody>
-  {timesheets.map((item) => (
-    <tr
-      key={item.id}
-      className="border-b border-[#ececec] transition hover:bg-[#fafafa]"
-    >
-      {/* WEEK */}
-      <td className="p-4 text-sm font-medium text-[#1d1d1f]">
-        {item.weekNumber}
-      </td>
+              {/* BODY */}
+              <tbody>
+                {filteredTimesheets.length >
+                0 ? (
+                  filteredTimesheets.map(
+                    (item) => (
+                      <tr
+                        key={
+                          item.id
+                        }
+                        className="border-b border-[#ececec] transition hover:bg-[#fafafa]"
+                      >
+                        {/* WEEK */}
+                        <td className="p-4 text-sm font-medium text-[#1d1d1f]">
+                          Week{" "}
+                          {
+                            item.weekNumber
+                          }
+                        </td>
 
-      {/* DATE */}
-      <td className="p-4 text-sm text-gray-500">
-        {item.dateRange}
-      </td>
+                        {/* DATE */}
+                        <td className="p-4 text-sm text-gray-500">
+                          {
+                            item.dateRange
+                          }
+                        </td>
 
-      {/* STATUS */}
-      <td className="p-4">
-        <span
-          className={`rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(
-            item.status
-          )}`}
-        >
-          {item.status}
-        </span>
-      </td>
+                        {/* STATUS */}
+                        <td className="p-4">
+                          <span
+                            className={`rounded-md px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${getStatusStyle(
+                              item.status
+                            )}`}
+                          >
+                            {
+                              item.status
+                            }
+                          </span>
+                        </td>
 
-      {/* ACTION */}
-      <td className="p-4 text-right">
-        <Link
-          href={`/dashboard/${item.id}`}
-          className="text-sm font-medium text-[#3b82f6] transition hover:text-blue-700"
-        >
-          {item.status ===
-          "Missing"
-            ? "Create"
-            : item.status ===
-              "Incomplete"
-            ? "Update"
-            : "View"}
-        </Link>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                        {/* ACTION */}
+                        <td className="p-4 text-right">
+                          <Link
+                            href={`/dashboard/${item.id}`}
+                            className="text-sm font-medium text-[#3b82f6] transition hover:text-blue-700"
+                          >
+                            {item.status ===
+                            "Missing"
+                              ? "Create"
+                              : item.status ===
+                                "Incomplete"
+                              ? "Update"
+                              : "View"}
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  )
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="p-10 text-center text-sm text-gray-500"
+                    >
+                      No
+                      timesheets
+                      found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             </table>
           </div>
 
           {/* FOOTER */}
           <div className="mt-6 flex flex-col items-center justify-between gap-4 md:flex-row">
-            <select className="h-9 rounded-md border border-gray-300 px-3 text-sm">
-              <option>5 per page</option>
-            </select>
+            <p className="text-sm text-gray-500">
+              Showing{" "}
+              {
+                filteredTimesheets.length
+              }{" "}
+              of{" "}
+              {
+                timesheets.length
+              }{" "}
+              timesheets
+            </p>
 
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <button className="rounded border px-3 py-1 hover:bg-gray-100">
+              <button className="rounded-lg border px-3 py-1.5 transition hover:bg-gray-100">
                 Previous
               </button>
 
-              <button className="rounded bg-blue-600 px-3 py-1 text-white">
+              <button className="rounded-lg bg-blue-600 px-3 py-1.5 text-white">
                 1
               </button>
 
-              <button className="rounded border px-3 py-1 hover:bg-gray-100">
-                2
-              </button>
-
-              <button className="rounded border px-3 py-1 hover:bg-gray-100">
-                3
-              </button>
-
-              <button className="rounded border px-3 py-1 hover:bg-gray-100">
+              <button className="rounded-lg border px-3 py-1.5 transition hover:bg-gray-100">
                 Next
               </button>
             </div>
           </div>
         </div>
-
-       
       </div>
-
-      {/* <TimesheetModa open={open} setOpen={setOpen} /> */}
     </div>
   );
 }

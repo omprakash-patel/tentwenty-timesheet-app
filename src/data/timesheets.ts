@@ -125,7 +125,7 @@ export const timesheets: Timesheet[] =
       dateRange:
         "8 - 12 January, 2024",
 
-      status: "Completed",
+      status: "Incomplete",
 
       totalHours: 32,
 
@@ -279,7 +279,7 @@ export const timesheets: Timesheet[] =
       dateRange:
         "22 - 26 January, 2024",
 
-      status: "Completed",
+      status: "Missing",
 
       totalHours: 40,
 
